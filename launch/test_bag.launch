@@ -1,0 +1,10 @@
+<launch>
+    <!-- For playing the bag file -->
+    <arg name="path" default="/home/me/ros_files/" />
+    <arg name="bag_file" default="my_bag_file_1" />
+    <node pkg="rosbag" type="play" name="player" output="screen" args="$(arg path)$(arg file_1).bag"/>
+    
+    <!-- Launch the manager -->
+    <node pkg="smartbase_radar" name=".py" type=".py" output="screen">
+
+</launch>
