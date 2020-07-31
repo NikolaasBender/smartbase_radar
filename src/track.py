@@ -1,4 +1,5 @@
 import rospy
+import math
 
 class Track:
     def __init__(self, track_range, track_azimuth, track_rate, track_rcs, radar_placement):
@@ -19,4 +20,6 @@ class Track:
 
     # convert the range and azimuth to a cartesian position
     def to_cartesian(self):
-        return
+        # t_range may actually be affected by radar_placement. investigating.
+        self.cart_x = self.t_range * math.sin(self.t_azimuth)
+        self.cart_y = self.t_range * math.sin(self.t_azimuth)
