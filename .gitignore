@@ -1,1 +1,4 @@
 *.vscode*
+# this is to preserve the generic form of this launch file
+*test_bag.launch
+*__pycache__*

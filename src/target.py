@@ -126,3 +126,5 @@ class Target:
     # This decides wether or not a track is close enough to the target to be considered
     def is_close(self):
         return
+
+
