@@ -12,14 +12,12 @@ class Track:
         self.id = self.gen_id()
 
         # the cartesian coordinates of the track
-        self.cart_x
-        self.cart_y
-
-        self.rate_x
-        self.rate_y
-
-    # convert the range and azimuth to a cartesian position
-    def to_cartesian(self):
-        # t_range may actually be affected by radar_placement. investigating.
-        self.cart_x = self.t_range * math.sin(self.t_azimuth)
+        self.cart_x = self.t_range * math.cos(self.t_azimuth)
         self.cart_y = self.t_range * math.sin(self.t_azimuth)
+
+        self.rate_x = self.t_rate * math.cos(self.t_azimuth)
+        self.rate_y = self.t_rate * math.sin(self.t_azimuth)
+
+    # This generates a hash of this radar track for later
+    def gen_id(self):
+        return hash((self.cart_x, self.cart_y, self.rate_x, self.rate_y, self.t_azimuth, self.t_range, self.t_rate))
