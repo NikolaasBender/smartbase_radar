@@ -11,47 +11,51 @@ class TargetManager:
     # take in raw tracks and add to existing target or create new target
     # more of a callback
     def update(self, tracks):
-        groups = self.grouper(tracks)
+        stragglers = self.grouper(tracks)
         # probability of each centroid going to each target
             # check for conflicts
-        
+
+
+    # This creates the selection criteria for divvying up the tracks for tracks
+    def selection_criteria(self, sorted_tracks):
+        # uhhh get some top percentage of tracks
+        # This needs work and should be something smarter
+        # get the best points
+        # look at the data maybe?
+        ten_percent = len(sorted_tracks)//10
+        return sorted_tracks[:ten_percent]
 
 
     # This looks for groups of targets
     # USE DISTANCE AND VELOCITY TO GROUP
     def grouper(self, tracks):
+        usable_tracks = tracks
         # if there are no active targets make new ones based on data
         if(len(self.active_targets) == 0):
-
+            for track in usable_tracks:
+                probabilities = self.distanceTo(track, usable_tracks)
+                something = 2 # YOU NEED TO DETERMINE THE METRIC BASED ON THE DATA
+                probable_tracks = [p for p in probabilities if p.prob >= something]
+                new_target = Target(probable_tracks)
+                # Remove the tracks for the new target from the list
+                usable_tracks = list(set(usable_tracks)^set(candidate_tracks))
+                self.active_targets.append(new_target)
         # Use active targets for divvying up tracks
         else:
             for target in self.active_targets:
-                candidates = self.distanceTo(target.current_pose)
-                target.update(candidates)
+                probabilities = self.distanceTo(target.current_pose, usable_tracks)
+                something = 2 # YOU NEED TO DETERMINE THE METRIC BASED ON THE DATA
+                candidate_tracks = [p for p in proabilities if p.prob >= something]
+                target.update(candidate_tracks)
+                # Remove tracks used for this target
+                usable_tracks = list(set(usable_tracks)^set(candidate_tracks))
+            if(len(usable_tracks) != 0):
+                # do something with the unused tracks
+                # identify new targets and add to list
 
+        # These are the stragglers
+        return usable_tracks
 
-        # return a list of centroids
-        for track in tracks:
-            probabilities = self.distanceTo(track, tracks)
-            something = 2 # YOU NEED TO DETERMINE THE METRIC BASED ON THE DATA
-            probable_tracks = [p for p in probabilities if p.prob >= something]
-            
-                new_target = Target(probable_tracks)
-                self.active_targets.append(new_target)
-            else:
-                # STORE THE CLOSEST 
-                closest
-                for target in self.active_targets:
-                    if self.d(can_cent, target.current_pose) < self.d(can)
-
-
-    # This computes deltas between 2 points
-    def d(self, pose1, pose2):
-
-
-
-        
-    
 
     def distanceTo(self, point, tracks):
         distances = {}
