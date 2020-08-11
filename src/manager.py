@@ -13,9 +13,10 @@ TM = TargetManager()
 def callback(data):
     array = []
     rospy.loginfo(len(data.targets))
-    for target in data.targets:
-        print(target)
-    #   append(Track(target. , t.))
+    for track in data.targets:
+        # print(target)
+        new_track = Track(track)
+        array.append(new_track)
     
     TM.update(array)
 

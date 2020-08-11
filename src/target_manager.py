@@ -18,11 +18,14 @@ class TargetManager:
 
     # This creates the selection criteria for divvying up the tracks for tracks
     def selection_criteria(self, sorted_tracks):
+        if sorted_tracks[0] < 80: 
+            return # something bad
+
         # uhhh get some top percentage of tracks
+        ten_percent = len(sorted_tracks)//10
         # This needs work and should be something smarter
         # get the best points
         # look at the data maybe?
-        ten_percent = len(sorted_tracks)//10
         return sorted_tracks[:ten_percent]
 
 
@@ -31,32 +34,23 @@ class TargetManager:
     def grouper(self, tracks):
         usable_tracks = tracks
         # if there are no active targets make new ones based on data
-        if(len(self.active_targets) == 0):
-            for track in usable_tracks:
-                probabilities = self.distanceTo(track, usable_tracks)
-                something = 2 # YOU NEED TO DETERMINE THE METRIC BASED ON THE DATA
-                probable_tracks = [p for p in probabilities if p.prob >= something]
-                new_target = Target(probable_tracks)
-                # Remove the tracks for the new target from the list
-                usable_tracks = list(set(usable_tracks)^set(candidate_tracks))
-                self.active_targets.append(new_target)
-        # Use active targets for divvying up tracks
-        else:
+        if(len(self.active_targets) != 0):
             for target in self.active_targets:
                 probabilities = self.distanceTo(target.current_pose, usable_tracks)
-                something = 2 # YOU NEED TO DETERMINE THE METRIC BASED ON THE DATA
-                candidate_tracks = [p for p in proabilities if p.prob >= something]
+                # something = 2 # YOU NEED TO DETERMINE THE METRIC BASED ON THE DATA
+                # candidate_tracks = [p for p in proabilities if p.prob >= something]
+                candidate_tracks = self.selection_criteria(probabilities)
                 target.update(candidate_tracks)
                 # Remove tracks used for this target
                 usable_tracks = list(set(usable_tracks)^set(candidate_tracks))
-            if(len(usable_tracks) != 0):
-                # do something with the unused tracks
-                # identify new targets and add to list
+            
+        # Go through what remians and find more targets until random noise is left
+        left_overs = self.findNewTargets(usable_tracks)
 
         # These are the stragglers
         return usable_tracks
 
-
+    # retuens a sorted list of probabilities of every other point being part of the same targets as the starting point
     def distanceTo(self, point, tracks):
         distances = {}
         for track in tracks:
@@ -64,9 +58,22 @@ class TargetManager:
             distances[track] = new_del
 
         sort_distances = sorted(distances.items(), key=lambda x: x.prob, reverse=True)
-        print(sort_distances)
+        # print(sort_distances)
         return sorted_distances
 
+
+    # This finds new targets in the data
+    def findNewTargets(self, usable_tracks):
+        for track in usable_tracks:
+            probabilities = self.distanceTo(track, usable_tracks)
+            # something = 2 # YOU NEED TO DETERMINE THE METRIC BASED ON THE DATA
+            # probable_tracks = [p for p in probabilities if p.prob >= something]
+            candidate_tracks = self.selection_criteria(probabilities)
+            new_target = Target(probable_tracks)
+            # Remove the tracks for the new target from the list
+            usable_tracks = list(set(usable_tracks)^set(candidate_tracks))
+            self.active_targets.append(new_target)
+        return usable_tracks
 
 
 class Delta:

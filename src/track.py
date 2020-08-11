@@ -2,13 +2,13 @@ import rospy
 import math
 
 class Track:
-    def __init__(self, track_range, track_azimuth, track_rate, track_rcs, radar_placement):
+    def __init__(self, track):
         super().__init__()
-        self.t_range = track_range
-        self.t_azimuth = track_azimuth
-        self.t_rate = track_rate
-        self.t_rcs = track_rcs
-        self.radar_place = radar_placement
+        self.t_range = track.range
+        self.t_azimuth = track.azimuth
+        self.t_rate = track.rate
+        self.t_rcs = track.rcs
+        # self.radar_place = radar_placement
         self.id = self.gen_id()
 
         # the cartesian coordinates of the track
