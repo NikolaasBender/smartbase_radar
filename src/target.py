@@ -2,60 +2,62 @@
 import rospy
 
 # Pose object
-
-
 class Pose:
     def __init__(self, x, y, rate_x, rate_y):
-        super().__init__()
+        # super().__init__()
         self.x = x
         self.y = y
         self.rate_x = rate_x
         self.rate_y = rate_y
 
+        # this is for compatability wih Delta in target_manager.py
+        self.cart_x = x
+        self.cart_y = y
+
 
 # every iteration, predict then update
 # update takes a 'measurement' aka what is the predicted centroid which is np.array([x,y])
-class kf:
-    def __init__(self, x, P, F, H, R, Q):
-        # LOOK AT ilectureonlin kf lecture 7
-        # state matrix [x, y, velx, vely]
-        self.x = x
-        # state cov mtx
-        self.P = P
-        # transition mtx
-        self.F = F
-        # observation model
-        self.H = H
-        # sensor noise cov
-        self.R = R
-        # process noise cov
-        self.Q = Q
+# class kf:
+#     def __init__(self, x, P, F, H, R, Q):
+#         # LOOK AT ilectureonlin kf lecture 7
+#         # state matrix [x, y, velx, vely]
+#         self.x = x
+#         # state cov mtx
+#         self.P = P
+#         # transition mtx
+#         self.F = F
+#         # observation model
+#         self.H = H
+#         # sensor noise cov
+#         self.R = R
+#         # process noise cov
+#         self.Q = Q
 
-    def predict(self):
-        self.x = self.F @ self.x
-        self.P = self.F @ self.P @ self.F.T + self.Q
+#     def predict(self):
+#         self.x = self.F @ self.x
+#         self.P = self.F @ self.P @ self.F.T + self.Q
 
-    def update(self, z):
-        S = self.H @ self.P @ self.H.T + self.R
-        K = self.P @ self.H.T @ np.linalg.inv(S)
-        y = z - self.H @ self.x
-        self.x += K @ y
-        self.P = self.P - K @ self.H @ self.P
+#     def update(self, z):
+#         S = self.H @ self.P @ self.H.T + self.R
+#         K = self.P @ self.H.T @ np.linalg.inv(S)
+#         y = z - self.H @ self.x
+#         self.x += K @ y
+#         self.P = self.P - K @ self.H @ self.P
 
-    def update_dt(self, dt):
-        self.F = np.array([[1, 0, dt, 0.0],
-                           [0, 1, 0, dt],
-                           [0, 0, 1, 0],
-                           [0, 0, 0, 1]])
+#     def update_dt(self, dt):
+#         self.F = np.array([[1, 0, dt, 0.0],
+#                            [0, 1, 0, dt],
+#                            [0, 0, 1, 0],
+#                            [0, 0, 0, 1]])
 
-    # returns [x,y] in a array
-    def get_current_state(self):
-        return self.x
+#     # returns [x,y] in a array
+#     def get_current_state(self):
+#         return self.x
 
 
 class Target:
     def __init__(self, init_tracks):
-        super().__init__()
+        # super().__init__()
         # store all of the tracks used for this object
         self.tracks_history = []
         # this is all of the poses that the target has had
@@ -70,20 +72,20 @@ class Target:
         # delta t for kf initialy
         self.dt = 0.1
 
-        self.kf(x=np.array([self.current_pose.x, self.current_pose.y, self.current_pose.rate_x, self.current_pose.rate_y]),
+        # self.kf(x=np.array([self.current_pose.x, self.current_pose.y, self.current_pose.rate_x, self.current_pose.rate_y]),
 
-                P=np.diag([0, 0, 0, 0.0]),
-                F=np.array([[1, 0, dt, 0.0],
-                            [0, 1, 0, dt],
-                            [0, 0, 1, 0],
-                            [0, 0, 0, 1]]),
-                H=np.array([[1, 0, 0, 0.0],
-                            [0, 1, 0, 0]]),
-                R=np.diag([10.0, 10.0]),
-                Q=np.array([[0.028, 0.0, 0.28, 0.0],
-                            [0.0, 0.28, 0.0, 0.28],
-                            [0.28, 0.0, 2.8, 0.0],
-                            [0.0, 0.28, 0.0, 2.8]]) * Q_CONST)
+        #         P=np.diag([0, 0, 0, 0.0]),
+        #         F=np.array([[1, 0, dt, 0.0],
+        #                     [0, 1, 0, dt],
+        #                     [0, 0, 1, 0],
+        #                     [0, 0, 0, 1]]),
+        #         H=np.array([[1, 0, 0, 0.0],
+        #                     [0, 1, 0, 0]]),
+        #         R=np.diag([10.0, 10.0]),
+        #         Q=np.array([[0.028, 0.0, 0.28, 0.0],
+        #                     [0.0, 0.28, 0.0, 0.28],
+        #                     [0.28, 0.0, 2.8, 0.0],
+        #                     [0.0, 0.28, 0.0, 2.8]]) * Q_CONST)
 
     # This gets the target started
     def initTarget(self, tracks):
@@ -123,7 +125,7 @@ class Target:
         self.dt = dt
 
         # THESE VALUES
-        x, y, vx, vy = self.avg_tracks(new_tracks)
+        x, y, vx, vy = self.avgTracks(new_tracks)
         # COLE YOU NEED TO USE THE ABOVE VALUES FOR FUSION WITH THE KF
 
         # COLE YOU NEED TO UPDATE THE self.current_pose WITH WHAT YOU GET FROM THE KF
@@ -134,41 +136,5 @@ class Target:
         self.pose_history.append(self.current_pose)
         
 
-
-# STILL DECIDING WHERE THIS NEEDS TO GO
-#     def calcDists(self, point, tracks):
-#         distances = {}
-#         for track in tracks:
-#             new_del = Delta(point, track)
-#             distances[track] = new_del
-
-#         sort_distances = sorted(distances.items(), key=lambda x: x.prob, reverse=True)
-#         print(sort_distances)
-#         return sorted_distances
-
-
-# class Delta:
-#     def __init__(self, track1, track2):
-#         super().__init__()
-#         self.track1 = track1
-#         self.track2 = track2
-#         self.dx = abs(self.track1.cart_x - self.track2.cart_x)
-#         self.dy = abs(self.track1.cart_y - self.track2.cart_y)
-#         self.dvx = abs(self.track1.rate_x - self.track2.rate_x)
-#         self.dvy = abs(self.track1.rate_y - self.track2.rate_y)
-#         self.dist = sqrt(self.dx^2 + self.dy^2)
-#         self.vel_del = sqrt(self.dvx^2 + self.dvy^2)
-#         self.prob = self.probability()
-
-#     # This calculates the probability of the two points being part of the same target
-#     def probability(self):
-#         # less of a distace delta means a higher probability
-#         p_dis = 1/(self.dist^1.0)
-#         # lower velocity delta means a higher probability
-#         p_vel = 1/(self.vel_del^1.0)
-#         # This changes how much of the metric is based on distance
-#         dist_mult = 1
-#         # This changes how much of the metric is based on velocity
-#         vel_mult = 1
-
-#         return (p_dis * dist_mult) * (p_vel * vel_mult)
+    def viz(self):
+        return

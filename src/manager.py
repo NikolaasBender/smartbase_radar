@@ -2,7 +2,7 @@
 
 import rospy
 from track import *
-#import target
+from target_manager import *
 
 from smartbase_radar.msg import RadarTargetArray
 

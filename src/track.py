@@ -3,13 +3,13 @@ import math
 
 class Track:
     def __init__(self, track):
-        super().__init__()
+        # super().__init__()
         self.t_range = track.range
         self.t_azimuth = track.azimuth
-        self.t_rate = track.rate
+        self.t_rate = track.range_rate
         self.t_rcs = track.rcs
         # self.radar_place = radar_placement
-        self.id = self.gen_id()
+        self.status = track.status
 
         # the cartesian coordinates of the track
         self.cart_x = self.t_range * math.cos(self.t_azimuth)
@@ -17,6 +17,8 @@ class Track:
 
         self.rate_x = self.t_rate * math.cos(self.t_azimuth)
         self.rate_y = self.t_rate * math.sin(self.t_azimuth)
+
+        self.id = self.gen_id()
 
     # This generates a hash of this radar track for later
     def gen_id(self):
