@@ -1,7 +1,7 @@
 <launch>
     <!-- For playing the bag file -->
-    <arg name="path" default="/home/nickbender/catkin_ws/bagfiles/" />
-    <arg name="bag_file" default="basic_radar" />
+    <arg name="path" default="/home/nick/bagfiles/" />
+    <arg name="bag_file" default="velodyne_radar_gps" />
     <node pkg="rosbag" type="play" name="player" output="screen" args="$(arg path)$(arg bag_file).bag"/>
 
     <!-- Launch the manager -->

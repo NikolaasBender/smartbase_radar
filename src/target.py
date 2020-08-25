@@ -1,5 +1,7 @@
 # This is a class for objectifying targets
 import rospy
+from visualization_msgs.msg import Marker
+
 
 # Pose object
 class Pose:
@@ -68,6 +70,21 @@ class Target:
         self.working_tracks = []
 
         self.initTarget(init_tracks)
+
+        self.marker = Marker()
+        self.marker.header.frame_id = "/TargetManager"
+        self.marker.type = 1 # Cube
+        self.marker.action = 0 # Add
+        # eventually this should be determined by the extimated size of the physical target
+        self.marker.scale.x = 0.3
+        self.marker.scale.y = 0.3
+        self.marker.scale.z = 0.3
+        self.marker.color.a = 1.0
+        self.marker.pose.orientation.w = 1.0
+        self.marker.pose.position.x = self.current_pose.x
+        self.marker.pose.position.y = self.current_pose.y
+        # radar is 2d so this can be left at 0.0
+        self.marker.pose.position.z = 0.0
 
         # delta t for kf initialy
         self.dt = 0.1
