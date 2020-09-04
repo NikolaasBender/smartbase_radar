@@ -23,6 +23,11 @@ class TargetManager:
         stragglers = self.grouper(tracks)
         # probability of each centroid going to each target
         # check for conflicts
+        # print("stragglers:", len(stragglers))
+        # Go through what remians and find more targets until random noise is left
+        left_overs = self.findNewTargets(stragglers)
+
+        self.clearMarkers()
 
         # clear marker array
         self.marker_array.markers.clear()
@@ -32,6 +37,7 @@ class TargetManager:
             # add this new marker to the array 
             self.marker_array.markers.append(target.marker)
         
+        # print(len(self.marker_array.markers))
         # publish the marker array
         self.viz_targets.publish(self.marker_array)
 
@@ -39,8 +45,10 @@ class TargetManager:
 
     # This creates the selection criteria for divvying up the tracks for tracks
     def selection_criteria(self, sorted_tracks):
-        if sorted_tracks < 80:
-            return  # something bad
+        if sorted_tracks[0][1] < 1000 or len(sorted_tracks) <= 9:
+            return  False  # something bad
+
+        sorted_tracks = [x[0] for x in sorted_tracks]
 
         # uhhh get some top percentage of tracks
         ten_percent = len(sorted_tracks)//10
@@ -59,21 +67,20 @@ class TargetManager:
         if(len(self.active_targets) != 0):
             for target in self.active_targets:
                 probabilities = self.distanceTo(
-                    target.current_pose, usable_tracks)
+                    target.getPred(), usable_tracks)
                 # something = 2 # YOU NEED TO DETERMINE THE METRIC BASED ON THE DATA
                 # candidate_tracks = [p for p in proabilities if p.prob >= something]
                 candidate_tracks = self.selection_criteria(probabilities)
-                # YOU NEED TO FIGURE OUT SOMETHING BETTER FOR THE dt THERE
-                target.updateTarget(candidate_tracks, 0.1)
-                # Remove tracks used for this target
-                usable_tracks = list(set(usable_tracks) ^
-                                     set(candidate_tracks))
-
-        # Go through what remians and find more targets until random noise is left
-        left_overs = self.findNewTargets(usable_tracks)
-
-        # These are the stragglers
+                if candidate_tracks != False:
+                    # YOU NEED TO FIGURE OUT SOMETHING BETTER FOR THE dt THERE
+                    target.updateTarget(candidate_tracks, 0.1)
+                    # Remove tracks used for this target
+                    usable_tracks = list(set(usable_tracks) ^
+                                        set(candidate_tracks))
+                else:
+                    self.active_targets.remove(target)
         return usable_tracks
+
 
 
     # returns a sorted list of probabilities of every other point being part of the same targets as the starting point
@@ -85,22 +92,23 @@ class TargetManager:
 
         sorted_distances = sorted(
             distances, key=lambda relation: relation[1], reverse=True)
-        sorted_distances = [x[0] for x in sorted_distances]
-        print(sorted_distances)
+        # print(sorted_distances)
         return sorted_distances
 
 
     # This finds new targets in the data
     def findNewTargets(self, usable_tracks):
         for track in usable_tracks:
+            # print("new target usable:", len(usable_tracks))
             probabilities = self.distanceTo(track, usable_tracks)
             # something = 2 # YOU NEED TO DETERMINE THE METRIC BASED ON THE DATA
             # probable_tracks = [p for p in probabilities if p.prob >= something]
             candidate_tracks = self.selection_criteria(probabilities)
-            new_target = Target(candidate_tracks)
-            # Remove the tracks for the new target from the list
-            usable_tracks = list(set(usable_tracks) ^ set(candidate_tracks))
-            self.active_targets.append(new_target)
+            if candidate_tracks != False:    
+                new_target = Target(candidate_tracks)
+                # Remove the tracks for the new target from the list
+                usable_tracks = list(set(usable_tracks) ^ set(candidate_tracks))
+                self.active_targets.append(new_target)
         return usable_tracks
 
 
@@ -113,6 +121,15 @@ class TargetManager:
     #     cluster_centers = ms.cluster_centers_
     #     # for i in
     #     return
+
+    def clearMarkers(self):
+        marker = Marker()
+        marker.header.frame_id = "world"
+        marker.type = 1  # Cube
+        marker.action = 3  # delete all
+        self.marker_array.markers.clear()
+        self.marker_array.markers.append(marker)
+        self.viz_targets.publish(self.marker_array)
 
 
 class Delta:

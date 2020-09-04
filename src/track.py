@@ -45,11 +45,11 @@ class Track:
         self.num = track.number
 
         # the cartesian coordinates of the track
-        self.cart_x = self.t_range * math.cos(self.t_azimuth)
-        self.cart_y = self.t_range * math.sin(self.t_azimuth)
+        self.cart_x = self.t_range * math.sin(self.t_azimuth)
+        self.cart_y = self.t_range * math.cos(self.t_azimuth)
 
-        self.rate_x = self.t_rate * math.cos(self.t_azimuth)
-        self.rate_y = self.t_rate * math.sin(self.t_azimuth)
+        self.rate_x = self.t_rate * math.sin(self.t_azimuth)
+        self.rate_y = self.t_rate * math.cos(self.t_azimuth)
 
         self.id = self.gen_id()
 

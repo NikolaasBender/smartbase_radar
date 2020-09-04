@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import rospy
 from track import *
@@ -13,7 +13,7 @@ TM = TargetManager()
 # callback
 def callback(data):
     array = []
-    rospy.loginfo(len(data.tracks))
+    # rospy.loginfo(len(data.tracks))
     for track in data.tracks:
         # print(target)
         new_track = Track(track)
