@@ -14,7 +14,7 @@ class TargetManager:
         # super().__init__()
         # a list of active targets
         self.active_targets = []
-        self.viz_targets = rospy.Publisher('targets_array_viz', MarkerArray)
+        self.viz_targets = rospy.Publisher('targets_array_viz', MarkerArray, queue_size=1000)
         self.marker_array = MarkerArray()
 
     # take in raw tracks and add to existing target or create new target

@@ -177,7 +177,8 @@ class Target:
         self.current_pose = pose
         self.pose_history.append(self.current_pose)
 
-    def viz(self):
+    def estimateSize(self):
+        # use the working tracks to 
         return
 
 
