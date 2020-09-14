@@ -45,22 +45,35 @@ class TargetManager:
 
     # This creates the selection criteria for divvying up the tracks for tracks
     def selection_criteria(self, sorted_tracks):
+        #edge check for garbage
         if sorted_tracks[0][1] < 1000 or len(sorted_tracks) <= 9:
-            return  False  # something bad
+            return  False
+        ##CJ IMPLEMENT STANDARD DEV
 
         sorted_tracks = [x[0] for x in sorted_tracks]
 
         # uhhh get some top percentage of tracks
-        ten_percent = len(sorted_tracks)//10
+        # ten_percent = len(sorted_tracks)//10
         # This needs work and should be something smarter
         # get the best points
         # look at the data maybe?
 
-        return sorted_tracks[:ten_percent]
+        # possibly increment data along with SD to keep points wrangled?
+
+        std_dev = sqrt(mean(abs(sorted_tracks - sorted_tracks.mean())**2))
+
+        # for loop here compare subset (top percent) of data with SD and possibly throw away
+        # or even interchange values
+
+        new_sorted_tracks = sorted_tracks[:len(sorted_tracks)//10]
+
+
+        ##new return to allow list manipulation
+        return new_sorted_tracks
 
 
     # This looks for groups of targets
-    # USE DISTANCE AND VELOCITY TO GROUP\
+    # USE DISTANCE AND VELOCITY TO GROUP
     def grouper(self, tracks):
         usable_tracks = tracks
         # if there are no active targets make new ones based on data
@@ -90,6 +103,8 @@ class TargetManager:
             new_del = Delta(point, track).prob
             distances.append((track, new_del))
 
+
+        # sorting
         sorted_distances = sorted(
             distances, key=lambda relation: relation[1], reverse=True)
         # print(sorted_distances)
@@ -145,16 +160,17 @@ class Delta:
         self.prob = self.probability()
 
 
-    # This calculates the probability of the two points being part of the same target
+    # This calculates the probability of the two points being part of the same target - WORKING
     def probability(self):
-        # THIS IS TRASH AND NEEDS TO BE BETTER
+        # EDITED BY COLE (WAS ORIG INT VALUES, CHANGED MULTIPLIERS)
+        # Changed nums
         # less of a distace delta means a higher probability
-        p_dis = 1/((self.dist + 0.0001)**1.0)
+        p_dis = 1/((self.dist + 0.00001)**1)
         # lower velocity delta means a higher probability
-        p_vel = 1/((self.vel_del + 0.0001)**1.0)
+        p_vel = 1/((self.vel_del + 0.00001)**1)
         # This changes how much of the metric is based on distance
-        dist_mult = 1
+        dist_mult = 0.8
         # This changes how much of the metric is based on velocity
-        vel_mult = 1
+        vel_mult = 3.0
 
         return (p_dis * dist_mult) * (p_vel * vel_mult)
