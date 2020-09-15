@@ -48,27 +48,27 @@ class TargetManager:
         #edge check for garbage
         if sorted_tracks[0][1] < 1000 or len(sorted_tracks) <= 9:
             return  False
-        ##CJ IMPLEMENT STANDARD DEV
+
+
+        ##CJ IMPLEMENTING STANDARD DEV
 
         sorted_tracks = [x[0] for x in sorted_tracks]
 
-        # uhhh get some top percentage of tracks
+        # ten percent method by nick:
         # ten_percent = len(sorted_tracks)//10
-        # This needs work and should be something smarter
-        # get the best points
-        # look at the data maybe?
 
         # possibly increment data along with SD to keep points wrangled?
+        # trying the above down here, running, not sure how much better
+        # the data actually is right now
 
-        std_dev = sqrt(mean(abs(sorted_tracks - sorted_tracks.mean())**2))
-
-        # for loop here compare subset (top percent) of data with SD and possibly throw away
-        # or even interchange values
-
-        new_sorted_tracks = sorted_tracks[:len(sorted_tracks)//10]
+        std_dev_mult = sqrt(mean(abs(sorted_tracks - sorted_tracks.mean())**2)) * 1.5
 
 
-        ##new return to allow list manipulation
+        for newTrack in sorted_tracks:
+            if newTrack <= (sorted_tracks.mean() - std_dev_mult) or newTrack >= (sorted_tracks.mean() + std_dev_mult):
+                new_sorted_tracks += newTrack
+
+
         return new_sorted_tracks
 
 
