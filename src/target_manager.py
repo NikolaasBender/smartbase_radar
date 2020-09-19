@@ -1,5 +1,5 @@
 from target import *
-import math
+from math import *
 import statistics
 from visualization_msgs.msg import MarkerArray
 import time
@@ -50,32 +50,22 @@ class TargetManager:
 
     # This creates the selection criteria for divvying up the tracks for tracks
     def selection_criteria(self, sorted_tracks):
-        # edge check for garbage
-        if len(sorted_tracks) < 2:
-            # print("SORTED TRACKS IS EMPTY")
-            return False
-        # if sorted_tracks[0][1] < 1000:
-        #     return  False
+        #edge check for garbage
+        if sorted_tracks[0][1] < 1000 or len(sorted_tracks) <= 9:
+            return  False
 
         # Sorted track has the structure (track, probability)
-        
         probabilities = [x[1] for x in sorted_tracks]
+        std_dev_mult = statistics.stdev(probabilities)
 
-        # possibly increment data along with SD to keep points wrangled?
-        # trying the above down here, running, not sure how much better
-        # the data actually is right now
 
-        std_dev_mult = statistics.stdev(probabilities) * 2.5
+        new_returnable_tracks = []
 
-        newSortedTracks = []
+        for track in sorted_tracks:
+            if track[1] >= std_dev_mult:
+                new_returnable_tracks.append(track[0])
 
-        for newTrack in sorted_tracks:
-            if newTrack[1] >= (sorted_tracks[0][1] - std_dev_mult):
-                newSortedTracks.append(newTrack[0])
-
-        if len(newSortedTracks) < 5:
-            return False
-        return newSortedTracks
+        return new_returnable_tracks
 
 
     # This looks for groups of targets
