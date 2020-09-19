@@ -1,5 +1,6 @@
 from target import *
 from math import *
+import statistics
 from visualization_msgs.msg import MarkerArray
 
 # This is for grouping
@@ -49,27 +50,18 @@ class TargetManager:
         if sorted_tracks[0][1] < 1000 or len(sorted_tracks) <= 9:
             return  False
 
-
-        ##CJ IMPLEMENTING STANDARD DEV
-
-        sorted_tracks = [x[0] for x in sorted_tracks]
-
-        # ten percent method by nick:
-        # ten_percent = len(sorted_tracks)//10
-
-        # possibly increment data along with SD to keep points wrangled?
-        # trying the above down here, running, not sure how much better
-        # the data actually is right now
-
-        std_dev_mult = sqrt(mean(abs(sorted_tracks - sorted_tracks.mean())**2)) * 1.5
+        # Sorted track has the structure (track, probability)
+        probabilities = [x[1] for x in sorted_tracks]
+        std_dev_mult = statistics.stdev(probabilities)
 
 
-        for newTrack in sorted_tracks:
-            if newTrack <= (sorted_tracks.mean() - std_dev_mult) or newTrack >= (sorted_tracks.mean() + std_dev_mult):
-                new_sorted_tracks += newTrack
+        new_returnable_tracks = []
 
+        for track in sorted_tracks:
+            if track[1] >= std_dev_mult:
+                new_returnable_tracks.append(track[0])
 
-        return new_sorted_tracks
+        return new_returnable_tracks
 
 
     # This looks for groups of targets
