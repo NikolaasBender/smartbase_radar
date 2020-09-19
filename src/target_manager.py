@@ -1,6 +1,8 @@
 from target import *
-from math import *
+import math
+import statistics
 from visualization_msgs.msg import MarkerArray
+import time
 
 # This is for grouping
 # import numpy as np
@@ -14,12 +16,14 @@ class TargetManager:
         # super().__init__()
         # a list of active targets
         self.active_targets = []
-        self.viz_targets = rospy.Publisher('targets_array_viz', MarkerArray)
+        self.viz_targets = rospy.Publisher('targets_array_viz', MarkerArray, queue_size=100)
         self.marker_array = MarkerArray()
+        self.start = time.time()
 
     # take in raw tracks and add to existing target or create new target
     # more of a callback
     def update(self, tracks):
+
         stragglers = self.grouper(tracks)
         # probability of each centroid going to each target
         # check for conflicts
@@ -40,41 +44,44 @@ class TargetManager:
         # print(len(self.marker_array.markers))
         # publish the marker array
         self.viz_targets.publish(self.marker_array)
+        # print("updated")
 
 
 
     # This creates the selection criteria for divvying up the tracks for tracks
     def selection_criteria(self, sorted_tracks):
-        #edge check for garbage
-        if sorted_tracks[0][1] < 1000 or len(sorted_tracks) <= 9:
-            return  False
+        # edge check for garbage
+        if len(sorted_tracks) < 2:
+            # print("SORTED TRACKS IS EMPTY")
+            return False
+        # if sorted_tracks[0][1] < 1000:
+        #     return  False
 
-
-        ##CJ IMPLEMENTING STANDARD DEV
-
-        sorted_tracks = [x[0] for x in sorted_tracks]
-
-        # ten percent method by nick:
-        # ten_percent = len(sorted_tracks)//10
+        # Sorted track has the structure (track, probability)
+        
+        probabilities = [x[1] for x in sorted_tracks]
 
         # possibly increment data along with SD to keep points wrangled?
         # trying the above down here, running, not sure how much better
         # the data actually is right now
 
-        std_dev_mult = sqrt(mean(abs(sorted_tracks - sorted_tracks.mean())**2)) * 1.5
+        std_dev_mult = statistics.stdev(probabilities) * 2.5
 
+        newSortedTracks = []
 
         for newTrack in sorted_tracks:
-            if newTrack <= (sorted_tracks.mean() - std_dev_mult) or newTrack >= (sorted_tracks.mean() + std_dev_mult):
-                new_sorted_tracks += newTrack
+            if newTrack[1] >= (sorted_tracks[0][1] - std_dev_mult):
+                newSortedTracks.append(newTrack[0])
 
-
-        return new_sorted_tracks
+        if len(newSortedTracks) < 5:
+            return False
+        return newSortedTracks
 
 
     # This looks for groups of targets
     # USE DISTANCE AND VELOCITY TO GROUP
     def grouper(self, tracks):
+        dt = time.time() - self.start
         usable_tracks = tracks
         # if there are no active targets make new ones based on data
         if(len(self.active_targets) != 0):
@@ -86,12 +93,13 @@ class TargetManager:
                 candidate_tracks = self.selection_criteria(probabilities)
                 if candidate_tracks != False:
                     # YOU NEED TO FIGURE OUT SOMETHING BETTER FOR THE dt THERE
-                    target.updateTarget(candidate_tracks, 0.1)
+                    target.updateTarget(candidate_tracks, dt)
                     # Remove tracks used for this target
                     usable_tracks = list(set(usable_tracks) ^
                                         set(candidate_tracks))
                 else:
                     self.active_targets.remove(target)
+        self.start = time.time()
         return usable_tracks
 
 
@@ -155,8 +163,8 @@ class Delta:
         self.dy = abs(self.track1.cart_y - self.track2.cart_y)
         self.dvx = abs(self.track1.rate_x - self.track2.rate_x)
         self.dvy = abs(self.track1.rate_y - self.track2.rate_y)
-        self.dist = sqrt(self.dx**2 + self.dy**2)
-        self.vel_del = sqrt(self.dvx**2 + self.dvy**2)
+        self.dist = math.sqrt(self.dx**2 + self.dy**2)
+        self.vel_del = math.sqrt(self.dvx**2 + self.dvy**2)
         self.prob = self.probability()
 
 
@@ -165,9 +173,9 @@ class Delta:
         # EDITED BY COLE (WAS ORIG INT VALUES, CHANGED MULTIPLIERS)
         # Changed nums
         # less of a distace delta means a higher probability
-        p_dis = 1/((self.dist + 0.00001)**1)
+        p_dis = 1/((self.dist + 0.00001)**2)
         # lower velocity delta means a higher probability
-        p_vel = 1/((self.vel_del + 0.00001)**1)
+        p_vel = 1/((self.vel_del + 0.00001)**2)
         # This changes how much of the metric is based on distance
         dist_mult = 0.8
         # This changes how much of the metric is based on velocity
