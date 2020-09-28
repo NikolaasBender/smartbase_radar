@@ -9,6 +9,7 @@ Q_CONST = 2.0
 
 # Pose object
 
+# (ind tasks/2)
 
 class Pose:
     def __init__(self, x, y, rate_x, rate_y):
@@ -80,10 +81,13 @@ class Target:
         # These are the tracks being used at this time
         self.working_tracks = []
 
+        self.initTarget(init_tracks)
+
         self.marker = Marker()
         self.marker.header.frame_id = "RadarFrontCenter"
         self.marker.type = 1  # Cube
         self.marker.action = 0  # Add
+        # eventually this should be determined by the extimated size of the physical target
         self.marker.scale.x = 1.0
         self.marker.scale.y = 1.0
         self.marker.scale.z = 1.0
@@ -92,17 +96,15 @@ class Target:
         self.marker.color.g = 0.0
         self.marker.color.a = 1.0
         self.marker.pose.orientation.w = 1.0
-        self.marker.pose.position.x = 1.0
-        self.marker.pose.position.y = 1.0
+        self.marker.pose.position.x = self.current_pose.x
+        self.marker.pose.position.y = self.current_pose.y
         # radar is 2d so this can be left at 0.0
         self.marker.pose.position.z = 0.0
         self.marker.id = random.randint(0, 1000000)
 
-        self.initTarget(init_tracks)
-        
         self.start = time.time()
 
-        # delta t for kf initialy
+        # delta t for kf initially
         dt = 0.1
 
         self.kf = kf(x=np.array([self.current_pose.x, self.current_pose.y, self.current_pose.rate_x, self.current_pose.rate_y]),
@@ -172,26 +174,123 @@ class Target:
         self.updatePose(pos)
         self.start = time.time()
 
+    def updatePose(self, pose):
+        self.current_pose = pose
+        self.pose_history.append(self.current_pose)
+
+    def viz(self):
+        return
+
+
+class Thing:
+    def __init__(self, init_tracks):
+        # super().__init__()
+        # store all of the tracks used for this object
+        self.tracks_history = []
+        # this is all of the poses that the target has had
+        self.pose_history = []
+
+        self.current_pose = None
+        # These are the tracks being used at this time
+        self.working_tracks = []
+
+        self.initTarget(init_tracks)
+
+        self.marker = Marker()
+        self.marker.header.frame_id = "RadarFrontCenter"
+        self.marker.type = 1  # Cube
+        self.marker.action = 0  # Add
+        # eventually this should be determined by the extimated size of the physical target
+        self.marker.scale.x = 1.0
+        self.marker.scale.y = 1.0
+        self.marker.scale.z = 1.0
+        self.marker.color.r = 1.0
+        self.marker.color.b = 0.0
+        self.marker.color.g = 0.0
+        self.marker.color.a = 1.0
+        self.marker.pose.orientation.w = 1.0
+        self.marker.pose.position.x = self.current_pose.x
+        self.marker.pose.position.y = self.current_pose.y
+        # radar is 2d so this can be left at 0.0
+        self.marker.pose.position.z = 0.0
+        self.marker.id = random.randint(0, 1000000)
+
+        self.start = time.time()
+
+        # delta t for kf initialy
+        dt = 0.1
+
+        self.kf = kf(x=np.array([self.current_pose.x, self.current_pose.y, self.current_pose.rate_x, self.current_pose.rate_y]),
+                     P=np.diag([0, 0, 0, 0.0]),
+                     F=np.array([[1, 0, dt, 0.0],
+                                 [0, 1, 0, dt],
+                                 [0, 0, 1, 0],
+                                 [0, 0, 0, 1]]),
+                     H=np.array([[1, 0, 0, 0.0],
+                                 [0, 1, 0, 0],
+                                 [0, 0, 1, 0],
+                                 [0, 0, 0, 1]]),
+                     R=np.diag([10.0, 10.0, 10.0, 10.0]),
+                     Q=np.array([[0.028, 0.0, 0.28, 0.0],
+                                 [0.0, 0.28, 0.0, 0.28],
+                                 [0.28, 0.0, 2.8, 0.0],
+                                 [0.0, 0.28, 0.0, 2.8]]) * Q_CONST)
+    # This gets the target started
+
+    ## can we refer to self like this??
+    def initTarget(self, tracks):
+        # print("new target")
+        x, y, vx, vy = self.avgTracks(tracks)
+        self.tracks_history.append(tracks)
+        pose = Pose(x, y, vx, vy)
+        self.updatePose(pose)
+
+
+    # This takes an average of each component of a track over all the candidate tracks
+    def centroid(self, candidates):
+        x = 0
+        y = 0
+        rate_x = 0
+        rate_y = 0
+        t = 0
+        for track in candidates:
+            x += track.cart_x
+            y += track.cart_y
+            rate_x += track.rate_x
+            rate_y += track.rate_y
+            t += 1
+        return x/t, y/t, rate_x/t, rate_y/t
+
+    # Part of the kf that does prediction
+
+    def getPred(self):
+        state = self.kf.predict(True)
+        p = Pose(*state)
+        return p
+
+    # THIS UPDATES THE TARGET WITH NEW TRACKS
+
+    def updateTarget(self, new_tracks, dt):
+        self.tracks_history.append(self.working_tracks)
+        self.working_tracks = new_tracks
+        # THESE VALUES
+        x, y, vx, vy = self.avgTracks(new_tracks)
+
+        dt = time.time() - self.start
+        self.kf.update_dt(dt)
+
+        data = np.array([x, y, vx, vy])
+        self.kf.predict()
+        self.kf.update(data)
+
+        filtered = self.kf.get_current_state()
+        pos = Pose(filtered[0], filtered[1], filtered[2], filtered[3])
+        self.updatePose(pos)
+        self.start = time.time()
 
     def updatePose(self, pose):
         self.current_pose = pose
         self.pose_history.append(self.current_pose)
-        self.marker.pose.position.x = pose.x
-        self.marker.pose.position.y = pose.y
-        self.sizeEstimate()
 
-    def sizeEstimate(self):
-        mx = 0
-        my = 0
-        for track in self.working_tracks:
-            dx = abs(track.cart_x - self.current_pose.cart_x)
-            dy = abs(track.cart_y - self.current_pose.cart_y)
-            if dx > mx:
-                mx = dx
-            if dy > my:
-                my = dy
-
-        self.marker.scale.x = mx
-        self.marker.scale.y = my
-
-        
+    def viz(self):
+        return
