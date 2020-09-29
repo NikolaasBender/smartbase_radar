@@ -2,6 +2,9 @@ from target import *
 import statistics
 from visualization_msgs.msg import MarkerArray
 
+##COLE - FOR DB SCAN REMOVE IF GO ANOTHER DIRECTION
+from sklearn.cluster import DBSCAN
+
 # This is for grouping
 # import numpy as np
 # from sklearn.cluster import MeanShift
@@ -36,25 +39,26 @@ class TargetManager:
     # USE DISTANCE AND VELOCITY TO GROUP
     def pos_grouper(self, tracks):
 
-        pos_tracks_grouped = tracks
 
-        #hash?? there seems like there could be some quick hashing
-        #to simplify this
+        #eps = cluster distance, min_samples is how many points to consider a cluster
+        #BUT-- is this efficient?
+        # ****** n_jobs param allows us to THREAD!!! POSSIBLE BIG SPEED-UP *******
 
-        #big picture: take large track data and simplify greatly while also
-        #leaving all valuable information and order in tact. Hmm.
 
-        #PANDAS?? may introduce some latency but does have incredible grouping libraries
+        cluster = DBSCAN(eps=3, min_samples=6).fit(tracks)
 
-        #correlated = {}
-        #ms = MeanShift()
-        #ms.fit(tracks)
-        #labels = ms.labels_
-        #cluster_centers = ms.cluster_centers_
-        ## for i in
-        #return
+        # clus_test = len(set(labels)) - (1 if -1 in labels else 0)
+        # nois_test = list(labels).count(-1)
 
-        return pos_tracks_grouped
+        # print('Estimated num of clusters: %d' % clus_test)
+        # print('Estimated num of noise points: %d' % nois_test)
+
+
+        # feels like I'm not returning the right thing, I might actually be looking for a subset
+        # of the following data? Investigate.
+        return cluster
+    
+
 
     # returns a sorted list of probabilities of every other point being part of the same targets as the starting point
     def distanceTo(self, point, tracks):
