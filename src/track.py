@@ -1,6 +1,7 @@
 import rospy
 import math
 
+# 
 
 # # This is for the radar messages defined in this pkg
 # class Track:
@@ -50,9 +51,3 @@ class Track:
 
         self.rate_x = self.t_rate * math.sin(self.t_azimuth)
         self.rate_y = self.t_rate * math.cos(self.t_azimuth)
-
-        self.id = self.gen_id()
-
-    # This generates a hash of this radar track for later
-    def gen_id(self):
-        return hash((self.cart_x, self.cart_y, self.rate_x, self.rate_y, self.t_azimuth, self.t_range, self.t_rate))
