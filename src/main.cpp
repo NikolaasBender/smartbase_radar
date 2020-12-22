@@ -19,28 +19,19 @@
 using namespace std;
 
 
-void sorter(const radar_driver::Track track){
-    if(track.moving){
-        float[] track_data = delta(track);
-        SLAM.update(track_data);
-    }else{
-        
+void sorter(const radar_driver::RadarTracks radar_tracks){
+    vector<radar_driver::Track> stationary;
+    vector<radar_driver::Track> moving;
+    for(int i = 0; i < radar_tracks.tracks.size(); i++){
+        radar_driver::Track r = radar_tracks.tracks[i];
+        if(r.moving){
+            moving.pushback(r);
+        }else{
+            stationary.pushback(r);
+        }
     }
-}
-
-
-
-// this calculates x and y for a radar track and packages the useful information for later use
-float* data_extract(const radar_driver::Track track){
-    // x, y, width, rate, accel, lateral_vel
-    float[6] data;
-    data[0] = math.cos(track.angle) * track.range;
-    data[1] = math.sin(track.angle) * track.range;
-    data[2] = track.width;
-    data[3] = track.rate;
-    data[4] = track.accel;
-    data[5] = track.late_rate;
-    return data;
+    SLAM_SYS.update(stationary);
+    
 }
 
 

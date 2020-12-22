@@ -48,6 +48,8 @@ class SLAM{
         // relative transform between keyframe and current frame
         MatrixXd relative_transform;
 
+        void SLAM::Update(vector<radar_driver::Track> new_data);
+
         // this computes the ego velocity of the vehicle
         Vector2f SLAM::EgoMotion(vector<Radat> data);
 
@@ -55,8 +57,10 @@ class SLAM{
         // feature extraction
         vector<KeyPoint> GetKeyPoints(Mat rad_img);
         // track refrence frame
+        Vector2f SLAM::EgoMotion(vector<Radat> data)
         MatrixXd GetMovemntProb(vector<KeyPoint> poi);
         // track local map
+        
         // new keyframe decision
 
         // LOCAL MAPPING

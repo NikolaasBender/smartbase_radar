@@ -62,6 +62,7 @@ MatrixXd SLAM::GetMovemntProb(vector<KeyPoint> poi){
     chrono::milliseconds now = chrono::duration_cast<chrono::milliseconds>(
         chhrono::system_clock::now().time_since_epoch()
     );
+    
     // project the keyframe into the future based on motion prior
     Mat kf_pri = Mat::zeros(n, n, CV_8U);
     for(auto d : keyframe_data){
@@ -89,4 +90,11 @@ Vector2f SLAM::EgoMotion(vector<Radat> data){
     // Normal equations, fast, least accurate
     // x = (angle_mtx.transpose() * angle_mtx).ldlt().solve(angle_mtx.transpose() * vel_vec);
     return x
+}
+
+
+
+void SLAM::Update(vector<radar_driver::Track> new_data){
+
+    Vector2f ego_motion = EgoMotion(new_data);
 }
