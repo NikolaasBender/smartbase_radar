@@ -17,18 +17,20 @@
 #include "radar_driver/Track.h"
 
 #include "opencv2/core/core.hpp"
-#include "opencv2/nonfree/nonfree.hpp"
+#include "opencv2/features2d.hpp"
+#include "opencv2/xfeatures2d.hpp"
 
 #include "radar_data.hpp"
 
 using namespace Eigen;
 using namespace std;
 using namespace cv;
+using namespace cv::xfeatures2d;
+
 // used this paper https://arxiv.org/pdf/2005.02198.pdf
 
 class SLAM{
     public:
-        Radat* get_current_pose();
         SLAM();
         ~SLAM();
     private:
@@ -38,9 +40,7 @@ class SLAM{
         VectorXd pose(4);
         MatrixXd key_frame();
         float keyframe_time;
-        vector<MatrixXd> key_fm_history;
-        vector<KeyPoint> key_frame_points;
-        vector<vector <KeyPoint>> key_fm_pts_history;
+        Full_Frame last_keyframe;
         // used for equ 3 in paper, idk what this should be set to
         auto sig_c;
         // needs to be expanded to include size
@@ -53,7 +53,7 @@ class SLAM{
         // this computes the ego velocity of the vehicle
         Vector2f SLAM::EgoMotion(vector<Radat> data);
 
-        // TRACKING
+        // POSE TRACKING
         // feature extraction
         vector<KeyPoint> GetKeyPoints(Mat rad_img);
         // track refrence frame

@@ -16,6 +16,9 @@
 
 #include "kalman_filter.hpp"
 
+#include "slam_sys.hpp"
+#include "radar_data.hpp"
+
 using namespace std;
 
 

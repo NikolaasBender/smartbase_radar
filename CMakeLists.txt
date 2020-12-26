@@ -69,6 +69,20 @@ add_executable(kalman_test src/kalman_test.cpp)
 target_link_libraries(kalman_test
                       kalman_filter ${catkin_LIBRARIES})
 
+add_library(slam_sys src/slam_sys.cpp)
+target_link_libraries(slam_sys ${catkin_LIBRARIES})
+add_dependencies(slam_sys radar_data ${PROJECT_NAME}_generate_messages_cpp)
+
+add_library(radar_data src/kalman_filter.cpp)
+target_link_libraries(radar_data ${catkin_LIBRARIES})
+add_dependencies(radar_data ${PROJECT_NAME}_generate_messages_cpp)
+
+add_executable(main src/main.cpp)
+target_link_libraries(main
+                      slam_sys
+                      radar_data
+                      ${catkin_LIBRARIES})
+
 #############
 ## Install ##
 #############
@@ -84,3 +98,5 @@ target_link_libraries(kalman_test
 #   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
 # )
 
+find_package(OpenCV)
+include_directories(${OpenCV_INCLUDE_DIRS})

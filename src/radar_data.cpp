@@ -1,20 +1,3 @@
-#include <ros/ros.h>
-#include <ros/console.h>
-
-#include <tf/transform_broadcaster.h>
-#include <tf/tf.h>
-
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <cmath>
-#include <vector>
-#include <algorithm>
-#include <Eigen/Dense>
-
-#include "radar_driver/RadarTracks.h"
-#include "radar_driver/Track.h"
-
 #include "radar_data.hpp"
 
 using namespace Eigen;

@@ -2,7 +2,8 @@
 #include "radar_driver/Track.h"
 
 #include "opencv2/core/core.hpp"
-#include "opencv2/nonfree/nonfree.hpp"
+#include "opencv2/features2d.hpp"
+#include "opencv2/xfeatures2d.hpp"
 
 using namespace std;
 using namespace cv;
@@ -13,9 +14,12 @@ struct Radat{
 };
 
 struct Full_Frame{
-    vector<Radat> raw_data;
+    vector<Radat*> raw_data;
     Mat radar_img;
     float[2] ego_vels;
+    vector<KeyPoint> frame_points;
+    bool is_keyframe;
+    chrono::milliseconds frame_time;
 }
 
 Radat unpackRadarData(const radar_driver::Track track);
