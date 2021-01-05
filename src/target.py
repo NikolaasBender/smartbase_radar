@@ -9,6 +9,7 @@ Q_CONST = 2.0
 
 # Pose object
 
+# (ind tasks/2)
 
 class Pose:
     def __init__(self, x, y, rate_x, rate_y):
@@ -103,7 +104,7 @@ class Target:
 
         self.start = time.time()
 
-        # delta t for kf initialy
+        # delta t for kf initially
         dt = 0.1
 
         self.kf = kf(x=np.array([self.current_pose.x, self.current_pose.y, self.current_pose.rate_x, self.current_pose.rate_y]),
@@ -236,6 +237,8 @@ class Thing:
                                  [0.28, 0.0, 2.8, 0.0],
                                  [0.0, 0.28, 0.0, 2.8]]) * Q_CONST)
     # This gets the target started
+
+    ## can we refer to self like this??
     def initTarget(self, tracks):
         # print("new target")
         x, y, vx, vy = self.avgTracks(tracks)

@@ -1,7 +1,7 @@
 <launch>
     <!-- For playing the bag file -->
-    <arg name="path" default="/home/nickbender/bagfiles/" />
-    <arg name="bag_file" default="ftcarson_small_demo" />
+    <arg name="path" default="/home/parallels/" />
+    <arg name="bag_file" default="velodyne_radar_gps" />
     <node pkg="rosbag" type="play" name="player" output="screen" args="$(arg path)$(arg bag_file).bag"/>
 
     <!-- Launch the manager -->
