@@ -7,11 +7,12 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <math.h>
+#include <cmath>
 #include <vector>
 #include <algorithm>
 #include <Eigen/Dense>
 #include <chrono>
+#include <gtsam>
 
 #include "radar_driver/RadarTracks.h"
 #include "radar_driver/Track.h"
@@ -35,48 +36,37 @@ class SLAM{
         ~SLAM();
     private:
         // this is used for radar image sizing
-        int n;
+        // operating area 86m x 60m 
+        // (60m, +/-45 deg) 
+        int n = 860;
+        // also used for image things
+        float scale = 10;
         // x_pos, y_pos, x_vel, y_vel, others???
-        VectorXd pose(4);
-        MatrixXd key_frame();
-        float keyframe_time;
+        VectorXf pose;
+        // MatrixXf key_frame();
         Full_Frame last_keyframe;
         // used for equ 3 in paper, idk what this should be set to
-        auto sig_c;
+        float sig_c;
         // needs to be expanded to include size
-        Mat RadarPicture(vector<Radat*> data);
+        Mat RadarPicture(vector<Radat> data);
         // relative transform between keyframe and current frame
         MatrixXd relative_transform;
 
-        void SLAM::Update(vector<radar_driver::Track> new_data);
+        void Update(vector<radar_driver::Track> new_data);
 
         // this computes the ego velocity of the vehicle
-        Vector2f SLAM::EgoMotion(vector<Radat> data);
+        VectorXf EgoMotion(vector<Radat> data);
 
         // POSE TRACKING
         // feature extraction
         vector<KeyPoint> GetKeyPoints(Mat rad_img);
         // track refrence frame
-        Vector2f SLAM::EgoMotion(vector<Radat> data)
         MatrixXd GetMovemntProb(vector<KeyPoint> poi);
         // track local map
-        
+        void KeyFrameMatch(MatrixXd frame);
         // new keyframe decision
+        bool NewKeyFrameDecision(void);
 
-        // LOCAL MAPPING
-        // process new keyframe
-        // old map point culling
-        // new map point creation
-        // local bundle adjust
+        NonLinearFactorGraph graph;
 
-        // LOOP DETECTION
-        // descriptior extraction
-        // compute SE2
-        // optimize pose graph
-        // global bundle adjust
-
-        // MAP
-        // keyframes
-        // map points
-
-}
+};

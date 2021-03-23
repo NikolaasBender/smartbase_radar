@@ -18,3 +18,11 @@ Radat unpackRadarData(const radar_driver::Track track){
     r.lat_vel = track.late_rate;
     return r;
 }
+
+vector<Radat> repackageData(vector<radar_driver::Track> new_data){
+    vector<Radat> data;
+    for(auto nd : new_data){
+        data.push_back(unpackRadarData(nd));
+    }
+    return data;
+}
