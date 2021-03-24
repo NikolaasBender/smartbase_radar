@@ -13,6 +13,13 @@
 #include <Eigen/Dense>
 #include <chrono>
 #include <gtsam>
+#include <gtsam/geometry/Pose2.h>
+#include <gtsam/nonlinear/NonlinearFactorGraph.h>
+#include <gtsam/nonlinear/Values.h>
+#include <gtsam/inference/Symbol.h>
+#include <gtsam/slam/BetweenFactor.h>
+#include <gtsam/nonlinear/GaussNewtonOptimizer.h>
+#include <gtsam/nonlinear/Marginals.h>
 
 #include "radar_driver/RadarTracks.h"
 #include "radar_driver/Track.h"
@@ -27,6 +34,7 @@ using namespace Eigen;
 using namespace std;
 using namespace cv;
 using namespace cv::xfeatures2d;
+using namespace gtsam;
 
 // used this paper https://arxiv.org/pdf/2005.02198.pdf
 
@@ -67,6 +75,18 @@ class SLAM{
         // new keyframe decision
         bool NewKeyFrameDecision(void);
 
+        Values initials;
+
+        // Create a factor graph container
         NonLinearFactorGraph graph;
+
+        // odometry measurement noise model (covariance matrix)
+        // noiseModel::Diagonal::shared_ptr odomModel = noiseModel::Diagonal::Sigmas(Vector3(0.5, 0.5, 0.1));
+
+        // tune this for the radar returns
+        noiseModel = noiseModel.Diagonal.Sigmas([0.1; 0.2]);
+        
+        
+        GaussNewtonParams parameters;
 
 };
