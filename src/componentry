@@ -1,0 +1,12 @@
+ingest
+
+sort points
+    moving vs not moving
+
+icp not moving points
+    
+
+calculate ego motion from not moving points
+
+add ego motion and icp transform to graph
+
